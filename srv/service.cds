@@ -1,6 +1,6 @@
 using { SFSF } from './external/SFSF';
 
-service MyService @(path: '/proxy'){
+service SFSFService  @(path: '/proxy'){
   entity cust_Turmas as projection on SFSF.cust_Turmas {
     externalCode,
     lastModifiedDateTime,
