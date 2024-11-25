@@ -1,7 +1,7 @@
 {
   "name": "cap-service-sf-lms",
   "version": "1.0.0",
-  "description": "A simple CAP project.",
+  "description": "Proxy for integration with SuccessFactors using SAP CAP, enabling seamless communication between systems and ALM data management.",
   "repository": "<Add your repository here>",
   "license": "UNLICENSED",
   "private": true,
