@@ -1,8 +1,7 @@
----
 _schema-version: 3.3.0
 ID: cap-service-sf-lms
 version: 1.0.0
-description: "Proxy for integration with SuccessFactors using SAP CAP, enabling seamless communication between systems and ALM data management."
+description: 'Proxy for integration with SuccessFactors using SAP CAP, enabling seamless communication between systems and ALM data management.'
 parameters:
   enable-parallel-deployments: true
 build-parameters:
@@ -19,10 +18,25 @@ modules:
       buildpack: nodejs_buildpack
       readiness-health-check-type: http
       readiness-health-check-http-endpoint: /health
+      retry: 1
     build-parameters:
       builder: npm
     provides:
       - name: srv-api # required by consumers of CAP services (e.g. approuter)
         properties:
           srv-url: ${default-url}
-    requires: []
+    requires:
+      - name: cap-service-sf-lms-connectivity
+      - name: cap-service-sf-lms-destination
+
+resources:
+  - name: cap-service-sf-lms-connectivity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: connectivity
+      service-plan: lite
+  - name: cap-service-sf-lms-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite

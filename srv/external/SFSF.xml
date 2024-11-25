@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<edmx:Edmx Version="1.0"
+    xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx"
+    xmlns:atom="http://www.w3.org/2005/Atom">
+    <edmx:DataServices m:DataServiceVersion="2.0"
+        xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
+        <Schema Namespace="SFODataSet"
+            xmlns="http://schemas.microsoft.com/ado/2008/09/edm"
+            xmlns:sf="http://www.successfactors.com/edm/sf"
+            xmlns:sap="http://www.successfactors.com/edm/sap">
+            <EntityContainer Name="EntityContainer" m:IsDefaultEntityContainer="true">
+                <EntitySet Name="cust_Turmas" EntityType="SFOData.cust_Turmas" sap:label="cust_Turmas" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:deletable="true">
+                    <Documentation>
+                        <Summary></Summary>
+                        <LongDescription></LongDescription>
+                        <sap:tagcollection>
+                            <sap:tag>Foundation/Platform (PLT)</sap:tag>
+                            <sap:tag>PLT - Generic Objects</sap:tag>
+                        </sap:tagcollection>
+                    </Documentation>
+                </EntitySet>
+            </EntityContainer>
+        </Schema>
+        <Schema Namespace="SFOData"
+            xmlns="http://schemas.microsoft.com/ado/2008/09/edm"
+            xmlns:sf="http://www.successfactors.com/edm/sf"
+            xmlns:sap="http://www.successfactors.com/edm/sap">
+            <EntityType Name="cust_Turmas">
+                <Key>
+                    <PropertyRef Name="externalCode"></PropertyRef>
+                </Key>
+                <Property Name="createdBy" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="false" sap:updatable="false" sap:upsertable="false" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="100" sap:label="Created By"></Property>
+                <Property Name="createdDateTime" Type="Edm.DateTimeOffset" Nullable="true" sap:required="false" sap:creatable="false" sap:updatable="false" sap:upsertable="false" sap:visible="true" sap:sortable="true" sap:filterable="true" sap:label="Created On"></Property>
+                <Property Name="cust_ACT_CPNT_ID" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="15" sap:label="ID do Item"></Property>
+                <Property Name="cust_CPNT_TYP_ID" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="100" sap:label="Tipo de Item"></Property>
+                <Property Name="cust_END_TME" Type="Edm.DateTimeOffset" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" sap:label="Data e Hora Final"></Property>
+                <Property Name="cust_INST_ID1" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="15" sap:label="Instrutor Principal"></Property>
+                <Property Name="cust_INST_ID2" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="15" sap:label="Instrutor Secundário"></Property>
+                <Property Name="cust_LMS" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="1" sap:label="LMS"></Property>
+                <Property Name="cust_LOCN_DESC" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="900" sap:label="LOCN_DESC"></Property>
+                <Property Name="cust_LOCN_ID1" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="255" sap:label="Local"></Property>
+                <Property Name="cust_NOTACTIVE" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="1" sap:label="Ativo"></Property>
+                <Property Name="cust_SSG_SEG_NUM" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="38" sap:label="Carga Horária"></Property>
+                <Property Name="cust_START_TME" Type="Edm.DateTimeOffset" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" sap:label="Data e Hora de Início"></Property>
+                <Property Name="cust_Status" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="255" sap:label="Status"></Property>
+                <Property Name="externalCode" Type="Edm.String" Nullable="false" sap:required="true" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="38" sap:label="externalCode"></Property>
+                <Property Name="externalName" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="true" sap:updatable="true" sap:upsertable="true" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="128" sap:label="externalName"></Property>
+                <Property Name="lastModifiedBy" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="false" sap:updatable="false" sap:upsertable="false" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="100" sap:label="Last Modified By"></Property>
+                <Property Name="lastModifiedDateTime" Type="Edm.DateTimeOffset" Nullable="true" sap:required="false" sap:creatable="false" sap:updatable="false" sap:upsertable="false" sap:visible="true" sap:sortable="true" sap:filterable="true" sap:label="Last Modified Date"></Property>
+                <Property Name="mdfSystemRecordStatus" Type="Edm.String" Nullable="true" sap:required="false" sap:creatable="false" sap:updatable="false" sap:upsertable="false" sap:visible="true" sap:sortable="true" sap:filterable="true" MaxLength="255" sap:label="Record Status"></Property>
+            </EntityType>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

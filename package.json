@@ -6,6 +6,8 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@sap-cloud-sdk/http-client": "^3.23.0",
+    "@sap-cloud-sdk/resilience": "^3.23.0",
     "@sap/cds": "^8",
     "express": "^4"
   },
@@ -20,5 +22,24 @@
     "start": "cds-serve",
     "lint:check": "npx prettier ./srv --check",
     "lint:fix": "npx prettier ./srv --write"
+  },
+  "cds": {
+    "requires": {
+      "auth": {
+        "kind": "mocked"
+      },
+      "SFSF": {
+        "kind": "odata-v2",
+        "model": "srv/external/SFSF",
+        "credentials": {
+          "destination": "SFSF",
+          "path": "/cust_Turmas"
+        },
+        "csrf": true,
+        "csrfInBatch": true
+      },
+      "connectivity": true,
+      "destinations": true
+    }
   }
 }
