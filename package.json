@@ -20,6 +20,7 @@
   },
   "scripts": {
     "start": "cds-serve",
+    "start:hybrid": "cds watch --profile hybrid",
     "lint:check": "npx prettier ./srv --check",
     "lint:fix": "npx prettier ./srv --write"
   },
