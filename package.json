@@ -32,8 +32,7 @@
         "kind": "odata-v2",
         "model": "srv/external/SFSF",
         "credentials": {
-          "destination": "SFSF",
-          "path": "/cust_Turmas"
+          "destination": "SFSF"
         },
         "csrf": true,
         "csrfInBatch": true
