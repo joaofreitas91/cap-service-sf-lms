@@ -8,4 +8,34 @@ module.exports = async (srv) => {
     'cust_Turmas',
     async (req) => await successFactor.run(req.query)
   )
+
+  srv.on(
+    'READ',
+    'cust_Cursos',
+    async (req) => await successFactor.run(req.query)
+  )
+
+  srv.on(
+    'READ',
+    'cust_Alunos',
+    async (req) => await successFactor.run(req.query)
+  )
+
+  srv.on(
+    'READ',
+    'cust_ListadePresenca',
+    async (req) => await successFactor.run(req.query)
+  )
+
+  srv.on(
+    'READ',
+    'cust_Instrutores',
+    async (req) => await successFactor.run(req.query)
+  )
+
+  srv.on(
+    'READ',
+    'User',
+    async (req) => await successFactor.run(req.query)
+  )
 }
