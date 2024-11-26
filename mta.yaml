@@ -28,7 +28,7 @@ modules:
     requires:
       - name: cap-service-sf-lms-connectivity
       - name: cap-service-sf-lms-destination
-
+      - name: cap-service-sf-lms-auth
 resources:
   - name: cap-service-sf-lms-connectivity
     type: org.cloudfoundry.managed-service
@@ -40,3 +40,12 @@ resources:
     parameters:
       service: destination
       service-plan: lite
+  - name: cap-service-sf-lms-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: cap-service-sf-lms-${space}
+        tenant-mode: dedicated
