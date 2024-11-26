@@ -35,6 +35,12 @@ module.exports = async (srv) => {
 
   srv.on(
     'READ',
+    'cust_Locais',
+    async (req) => await successFactor.run(req.query)
+  )
+
+  srv.on(
+    'READ',
     'User',
     async (req) => await successFactor.run(req.query)
   )

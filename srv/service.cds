@@ -17,6 +17,7 @@ service SFSFService  @(path: '/proxy'){
   entity cust_Cursos as projection on SFSF.cust_Cursos; 
   entity cust_Alunos as projection on SFSF.cust_Alunos;
   entity cust_Instrutores as projection on SFSF.cust_Instrutores; 
+  entity cust_Locais as projection on SFSF.cust_Locais; 
   entity User as projection on SFSF.User{
     userId,
     firstName,
