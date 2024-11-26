@@ -21,6 +21,10 @@ service SFSFService  @(path: '/proxy'){
     cust_NOTACTIVE,
     externalName,
     cust_LMS,
+    cust_CursosNav: redirected to cust_Cursos,
+    cust_Inst1Nav: redirected to cust_Instrutores,
+    cust_Inst2Nav: redirected to cust_Instrutores,
+    cust_ListaNav: redirected to cust_ListadePresenca,
     createdByNav: redirected to User,
     lastModifiedByNav: redirected to User,
   };
