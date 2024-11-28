@@ -1,6 +1,6 @@
 using { SFSF } from './external/SFSF';
 
-service SFSFService  @(path: '/proxy'){
+service SFSFService {
   entity cust_Turmas as projection on SFSF.cust_Turmas {
     *,
     cust_CursosNav: redirected to cust_Cursos,
