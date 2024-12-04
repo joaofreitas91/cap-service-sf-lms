@@ -1,15 +1,52 @@
 const cds = require('@sap/cds')
+const { executeHttpRequest } = require('@sap-cloud-sdk/http-client')
 
 module.exports = async (srv) => {
   const successFactor = await cds.connect.to('SFSF')
-  srv.on(
-    'CREATE',
-    'cust_Turmas',
-    async (req) => {
-      console.log(req.data)
-      return await successFactor.post(`/cust_Turmas`, req.data)
+
+  srv.on('CREATE', 'cust_Turmas', async (req) => {
+    const payload = req.data
+    const { cust_INST_ID1, cust_INST_ID2 } = payload
+
+    if (cust_INST_ID1) {
+      req.data.cust_Inst1Nav = {
+        __metadata: {
+          uri: `/cust_Instrutores('${cust_INST_ID1}')`,
+        },
+      }
     }
-  )
+
+    if (cust_INST_ID2) {
+      req.data.cust_Inst2Nav = {
+        __metadata: {
+          uri: `/cust_Instrutores('${cust_INST_ID2}')`,
+        },
+      }
+    }
+
+    try {
+      const response = await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/cust_Turmas',
+          data: payload,
+        }
+      )
+
+      return response.data
+    } catch (error) {
+      console.error(error)
+
+      req.error({
+        code: error.code || 'INTERNAL_SERVER_ERROR',
+        message: error.message,
+        target: req.target,
+      })
+    }
+  })
 
   srv.on(
     'READ',
@@ -19,7 +56,7 @@ module.exports = async (srv) => {
 
   srv.on('UPDATE', 'cust_Turmas', async (req) => {
     console.log(req.data)
-    
+
     const { externalCode, ...data } = req.data
     await successFactor.put(`/cust_Turmas('${externalCode}')`, data)
   })
