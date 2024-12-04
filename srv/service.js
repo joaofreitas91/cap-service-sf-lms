@@ -5,7 +5,10 @@ module.exports = async (srv) => {
   srv.on(
     'CREATE',
     'cust_Turmas',
-    async (req) => await successFactor.run(req.query)
+    async (req) => {
+      console.log(req.data)
+      return await successFactor.post(`/cust_Turmas`, req.data)
+    }
   )
 
   srv.on(
@@ -15,6 +18,8 @@ module.exports = async (srv) => {
   )
 
   srv.on('UPDATE', 'cust_Turmas', async (req) => {
+    console.log(req.data)
+    
     const { externalCode, ...data } = req.data
     await successFactor.put(`/cust_Turmas('${externalCode}')`, data)
   })

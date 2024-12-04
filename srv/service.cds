@@ -3,6 +3,8 @@ using { SFSF } from './external/SFSF';
 service SFSFService {
   entity cust_Turmas as projection on SFSF.cust_Turmas {
     *,
+    cust_START_TME : String,
+    cust_END_TME : String,
     cust_CursosNav: redirected to cust_Cursos,
     cust_Inst1Nav: redirected to cust_Instrutores,
     cust_Inst2Nav: redirected to cust_Instrutores,
