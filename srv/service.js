@@ -6,7 +6,9 @@ module.exports = async (srv) => {
 
   srv.on('CREATE', 'cust_Turmas', async (req) => {
     const payload = req.data
-    const { cust_INST_ID1, cust_INST_ID2 } = payload
+
+    // cust_ACT_CPNT_ID => ID do Curso
+    const { cust_INST_ID1, cust_INST_ID2, cust_ACT_CPNT_ID } = payload
 
     if (cust_INST_ID1) {
       req.data.cust_Inst1Nav = {
@@ -20,6 +22,14 @@ module.exports = async (srv) => {
       req.data.cust_Inst2Nav = {
         __metadata: {
           uri: `/cust_Instrutores('${cust_INST_ID2}')`,
+        },
+      }
+    }
+
+    if (cust_ACT_CPNT_ID) {
+      req.data.cust_CursosNav = {
+        __metadata: {
+          uri: `/cust_Cursos('${cust_ACT_CPNT_ID}')`,
         },
       }
     }
