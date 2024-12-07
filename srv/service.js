@@ -89,11 +89,42 @@ module.exports = async (srv) => {
     async (req) => await successFactor.run(req.query)
   )
 
-  srv.on(
-    'CREATE',
-    'cust_ListadePresenca',
-    async (req) => await successFactor.run(req.query)
-  )
+  srv.on('CREATE', 'cust_ListadePresenca', async (req) => {
+    const payload = req.data
+
+    const { cust_Aluno } = payload
+
+    if (cust_Aluno) {
+      req.data.cust_AlunosNav = {
+        __metadata: {
+          uri: `/cust_Alunos('${cust_Aluno}')`,
+        },
+      }
+    }
+
+    try {
+      const response = await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/cust_ListadePresenca',
+          data: payload,
+        }
+      )
+
+      return response.data
+    } catch (error) {
+      console.error(error)
+
+      req.error({
+        code: error.code || 'INTERNAL_SERVER_ERROR',
+        message: error.message,
+        target: req.target,
+      })
+    }
+  })
 
   srv.on(
     'READ',
