@@ -67,8 +67,48 @@ module.exports = async (srv) => {
   srv.on('UPDATE', 'cust_Turmas', async (req) => {
     console.log(req.data)
 
-    const { externalCode, ...data } = req.data
-    await successFactor.put(`/cust_Turmas('${externalCode}')`, data)
+    const { externalCode, cust_ListaNav, ...data } = req.data
+
+    const payload = {
+      __metadata: {
+        uri: 'cust_Turmas',
+      },
+      externalCode: externalCode,
+      ...data,
+    }
+
+    if (cust_ListaNav) {
+      payload.cust_ListaNav = cust_ListaNav.map(({ externalCode }) => {
+        return {
+          __metadata: {
+            uri: `/cust_ListadePresenca('${externalCode}')`,
+          },
+        }
+      })
+    }
+
+    try {
+      await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: payload,
+        }
+      )
+
+      // return response.data
+    } catch (error) {
+      console.error(error)
+
+      req.error({
+        code: error.code || 'INTERNAL_SERVER_ERROR',
+        message: error.message,
+        target: req.target,
+      })
+    }
   })
 
   srv.on(

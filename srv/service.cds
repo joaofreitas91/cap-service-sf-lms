@@ -8,7 +8,8 @@ service SFSFService {
     cust_CursosNav: redirected to cust_Cursos,
     cust_Inst1Nav: redirected to cust_Instrutores,
     cust_Inst2Nav: redirected to cust_Instrutores,
-    cust_ListaNav: redirected to cust_ListadePresenca,
+    cust_ListaNav: Composition of many SFSF.cust_ListadePresenca
+    on cust_ListaNav.externalCode,
     createdByNav: redirected to User,
     lastModifiedByNav: redirected to User,
   };
