@@ -46,14 +46,15 @@ module.exports = async (srv) => {
         }
       )
 
-      return response.data
-    } catch (error) {
-      console.error(error)
+      delete response.data.d.cust_Inst1Nav
+      delete response.data.d.cust_Inst2Nav
+      delete response.data.d.cust_CursosNav
 
+      return response.data.d
+    } catch (error) {
       req.error({
-        code: error.code || 'INTERNAL_SERVER_ERROR',
-        message: error.message,
-        target: req.target,
+        code: error.status || '500',
+        message: error.message || 'INTERNAL_SERVER_ERROR',
       })
     }
   })
@@ -63,7 +64,7 @@ module.exports = async (srv) => {
     'cust_Turmas',
     async (req) => await successFactor.run(req.query)
   )
-
+  
   srv.on('UPDATE', 'cust_Turmas', async (req) => {
     console.log(req.data)
 
