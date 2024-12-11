@@ -68,8 +68,6 @@ module.exports = async (srv) => {
   )
 
   srv.on('UPDATE', 'cust_Turmas', async (req) => {
-    console.log(req.data)
-
     const { externalCode, cust_ListaNav, ...data } = req.data
 
     const payload = {
@@ -91,7 +89,7 @@ module.exports = async (srv) => {
     }
 
     try {
-      await executeHttpRequest(
+      const response = await executeHttpRequest(
         {
           destinationName: 'SFSF',
         },
@@ -102,14 +100,14 @@ module.exports = async (srv) => {
         }
       )
 
-      // return response.data
+      debugger
+      return response.data.d
     } catch (error) {
-      console.error(error)
-
       req.error({
-        code: error.code || 'INTERNAL_SERVER_ERROR',
-        message: error.message,
-        target: req.target,
+        code: error.status || '500',
+        message:
+          error?.response?.data?.error?.message?.value ||
+          'INTERNAL_SERVER_ERROR',
       })
     }
   })
