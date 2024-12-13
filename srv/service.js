@@ -1,5 +1,6 @@
 const cds = require('@sap/cds')
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client')
+const { formatDate, extractGetTime } = require('./utils/formatters.js')
 
 module.exports = async (srv) => {
   const successFactor = await cds.connect.to('SFSF')
@@ -8,7 +9,21 @@ module.exports = async (srv) => {
     const payload = req.data
 
     // cust_ACT_CPNT_ID => ID do Curso
-    const { cust_INST_ID1, cust_INST_ID2, cust_ACT_CPNT_ID } = payload
+    const {
+      cust_INST_ID1,
+      cust_INST_ID2,
+      cust_ACT_CPNT_ID,
+      cust_START_TME,
+      cust_END_TME,
+    } = payload
+
+    if (cust_START_TME) {
+      req.data.cust_START_TME = formatDate(cust_START_TME)
+    }
+
+    if (cust_END_TME) {
+      req.data.cust_END_TME = formatDate(cust_END_TME)
+    }
 
     if (cust_INST_ID1) {
       req.data.cust_Inst1Nav = {
@@ -50,7 +65,18 @@ module.exports = async (srv) => {
       delete response.data.d.cust_Inst2Nav
       delete response.data.d.cust_CursosNav
 
-      return response.data.d
+      /* 
+      cust_END_TME
+      cust_START_TME
+      */
+
+      const data = {
+        ...response.data.d,
+        cust_START_TME: extractGetTime(response.data.d.cust_START_TME),
+        cust_END_TME: extractGetTime(response.data.d.cust_END_TME),
+      }
+
+      return data
     } catch (error) {
       req.error({
         code: error.status || '500',
@@ -133,7 +159,21 @@ module.exports = async (srv) => {
   srv.on('CREATE', 'cust_ListadePresenca', async (req) => {
     const payload = req.data
 
-    const { cust_Aluno } = payload
+    const {
+      cust_Aluno,
+      externalCode,
+      cust_Turma,
+      cust_startdate,
+      cust_enddate,
+    } = payload
+
+    if (cust_startdate) {
+      req.data.cust_startdate = formatDate(cust_startdate)
+    }
+
+    if (cust_enddate) {
+      req.data.cust_enddate = formatDate(cust_enddate)
+    }
 
     if (cust_Aluno) {
       req.data.cust_AlunosNav = {
@@ -141,6 +181,20 @@ module.exports = async (srv) => {
           uri: `/cust_Alunos('${cust_Aluno}')`,
         },
       }
+    }
+
+    const classPayload = {
+      __metadata: {
+        uri: 'cust_Turmas',
+      },
+      externalCode: cust_Turma,
+      cust_ListaNav: [
+        {
+          __metadata: {
+            uri: `/cust_ListadePresenca('${externalCode}')`,
+          },
+        },
+      ],
     }
 
     try {
@@ -152,6 +206,17 @@ module.exports = async (srv) => {
           method: 'POST',
           url: '/cust_ListadePresenca',
           data: payload,
+        }
+      )
+
+      await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: classPayload,
         }
       )
 
