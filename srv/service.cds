@@ -13,6 +13,7 @@ service SFSFService {
   };
   entity cust_ListadePresenca as projection on SFSF.cust_ListadePresenca {
     *,
+    cust_nota: String,
     createdByNav: redirected to User,
     lastModifiedByNav: redirected to User,
     cust_AlunosNav: redirected to cust_Alunos,

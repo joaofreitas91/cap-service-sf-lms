@@ -126,7 +126,35 @@ module.exports = async (srv) => {
         }
       )
 
-      debugger
+      const registrationForms = await successFactor.run(
+        SELECT.from('cust_ListadePresenca').where({
+          cust_Turma: externalCode,
+        })
+      )
+
+      if (registrationForms.length) {
+        const pRegistrationForms = registrationForms.map((rf) => {
+          executeHttpRequest(
+            {
+              destinationName: 'SFSF',
+            },
+            {
+              method: 'POST',
+              url: '/upsert',
+              data: {
+                __metadata: {
+                  uri: 'cust_ListadePresenca',
+                },
+                externalCode: rf.externalCode,
+                cust_LMS: data.cust_LMS,
+              },
+            }
+          )
+        })
+
+        Promise.all(pRegistrationForms)
+      }
+
       return response.data.d
     } catch (error) {
       req.error({
@@ -221,7 +249,14 @@ module.exports = async (srv) => {
       )
 
       delete response.data.d.cust_AlunosNav
-      return response.data.d
+
+      const data = {
+        ...response.data.d,
+        cust_startdate: extractGetTime(response.data.d.cust_startdate),
+        cust_enddate: extractGetTime(response.data.d.cust_enddate),
+      }
+
+      return data
     } catch (error) {
       req.error({
         code: error.status || '500',
@@ -232,15 +267,77 @@ module.exports = async (srv) => {
     }
   })
 
-  srv.on(
-    'READ',
-    'cust_ListadePresenca',
-    async (req) => await successFactor.run(req.query)
-  )
+  srv.on('READ', 'cust_ListadePresenca', async (req) => {
+    const data = await successFactor.run(req.query)
+
+    return data
+  })
 
   srv.on('UPDATE', 'cust_ListadePresenca', async (req) => {
     const { externalCode, ...data } = req.data
-    await successFactor.put(`/cust_ListadePresenca('${externalCode}')`, data)
+
+    const {
+      cust_Turma,
+      cust_sequencia,
+      cust_Status,
+      cust_Aluno,
+      cust_startdate,
+      cust_enddate,
+      cust_nota,
+      externalName,
+      cust_LMS,
+    } = await successFactor.get(`/cust_ListadePresenca('${externalCode}')`)
+
+    const update = {
+      cust_Turma,
+      cust_sequencia,
+      cust_Status,
+      cust_Aluno,
+      cust_startdate: cust_startdate
+        ? cust_startdate.replace(/[+-]\d{4}/g, '')
+        : null,
+      cust_enddate: cust_enddate
+        ? cust_enddate.replace(/[+-]\d{4}/g, '')
+        : null,
+      cust_nota,
+      externalName,
+      cust_LMS,
+      ...data,
+    }
+
+    const payload = {
+      __metadata: {
+        uri: 'cust_ListadePresenca',
+      },
+      externalCode: externalCode,
+      ...update,
+    }
+
+    try {
+      const response = await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: payload,
+        }
+      )
+
+      if (response.data.d.cust_nota) {
+        response.data.d.cust_nota = Number(response.data.d.cust_nota)
+      }
+
+      return response.data.d
+    } catch (error) {
+      req.error({
+        code: error.status || '500',
+        message:
+          error?.response?.data?.error?.message?.value ||
+          'INTERNAL_SERVER_ERROR',
+      })
+    }
   })
 
   srv.on(
