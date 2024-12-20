@@ -28,6 +28,7 @@ service SFSFService {
   };
   entity cust_Cursos as projection on SFSF.cust_Cursos {
     *,
+    cust_InstrutorNav: redirected to cust_Instrutores,
     createdByNav: redirected to User,
     lastModifiedByNav: redirected to User,
   }; 
