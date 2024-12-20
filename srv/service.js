@@ -346,6 +346,122 @@ module.exports = async (srv) => {
     async (req) => await successFactor.run(req.query)
   )
 
+  srv.on('CREATE', 'cust_listadiaria', async (req) => {
+    const payload = req.data
+
+    const { cust_startdate, cust_enddate, cust_listaNav } = payload
+
+    if (cust_startdate) {
+      req.data.cust_startdate = formatDate(cust_startdate)
+    }
+
+    if (cust_enddate) {
+      req.data.cust_enddate = formatDate(cust_enddate)
+    }
+
+    if (cust_listaNav) {
+      req.data.cust_listaNav = cust_listaNav.map(({ externalCode }) => {
+        return {
+          __metadata: {
+            uri: `/cust_ListadePresenca('${externalCode}')`,
+          },
+        }
+      })
+    }
+
+    try {
+      const response = await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/cust_listadiaria',
+          data: payload,
+        }
+      )
+
+      const data = {
+        ...response.data.d,
+        cust_startdate: extractGetTime(response.data.d.cust_startdate),
+        cust_enddate: extractGetTime(response.data.d.cust_enddate),
+      }
+
+      return data
+    } catch (error) {
+      req.error({
+        code: error.status || '500',
+        message:
+          error?.response?.data?.error?.message?.value ||
+          'INTERNAL_SERVER_ERROR',
+      })
+    }
+  })
+
+  srv.on(
+    'READ',
+    'cust_listadiaria',
+    async (req) => await successFactor.run(req.query)
+  )
+
+  srv.on('UPDATE', 'cust_listadiaria', async (req) => {
+    const {externalCode, cust_startdate, cust_enddate, cust_listaNav, ...data } = req.data
+
+    const payload = {
+      __metadata: {
+        uri: 'cust_listadiaria',
+      },
+      externalCode: externalCode,
+      ...data,
+    }
+
+    if (cust_startdate) {
+      payload.cust_startdate = formatDate(cust_startdate)
+    }
+
+    if (cust_enddate) {
+      payload.cust_enddate = formatDate(cust_enddate)
+    }
+
+    if (cust_listaNav) {
+      payload.cust_listaNav = cust_listaNav.map(({ externalCode }) => {
+        return {
+          __metadata: {
+            uri: `/cust_ListadePresenca('${externalCode}')`,
+          },
+        }
+      })
+    }
+
+    try {
+      const response = await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: payload,
+        }
+      )
+
+      return response.data.d
+    } catch (error) {
+      req.error({
+        code: error.status || '500',
+        message:
+          error?.response?.data?.error?.message?.value ||
+          'INTERNAL_SERVER_ERROR',
+      })
+    }
+  })
+
+  srv.on(
+    'DELETE',
+    'cust_listadiaria',
+    async (req) => await successFactor.run(req.query)
+  )
+
   srv.on(
     'READ',
     'cust_Instrutores',

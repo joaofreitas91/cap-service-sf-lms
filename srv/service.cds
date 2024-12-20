@@ -17,7 +17,15 @@ service SFSFService {
     createdByNav: redirected to User,
     lastModifiedByNav: redirected to User,
     cust_AlunosNav: redirected to cust_Alunos,
-  }; 
+  };
+  entity cust_listadiaria as projection on SFSF.cust_listadiaria {
+    *,
+    cust_listaNav: Composition of many SFSF.cust_ListadePresenca
+    on cust_listaNav.externalCode,
+    cust_turmanav: redirected to cust_Turmas,
+    createdByNav: redirected to User,
+    lastModifiedByNav: redirected to User,
+  };
   entity cust_Cursos as projection on SFSF.cust_Cursos {
     *,
     createdByNav: redirected to User,
