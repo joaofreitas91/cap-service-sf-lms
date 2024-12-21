@@ -405,7 +405,13 @@ module.exports = async (srv) => {
   )
 
   srv.on('UPDATE', 'cust_listadiaria', async (req) => {
-    const {externalCode, cust_startdate, cust_enddate, cust_listaNav, ...data } = req.data
+    const {
+      externalCode,
+      cust_startdate,
+      cust_enddate,
+      cust_listaNav,
+      ...data
+    } = req.data
 
     const payload = {
       __metadata: {
@@ -459,6 +465,164 @@ module.exports = async (srv) => {
   srv.on(
     'DELETE',
     'cust_listadiaria',
+    async (req) => await successFactor.run(req.query)
+  )
+
+  srv.on('CREATE', 'cust_presencalms', async (req) => {
+    const payload = req.data
+
+    const {
+      cust_startdate,
+      cust_enddate,
+      cust_ficha,
+      cust_turma,
+      cust_segmento,
+    } = payload
+
+    if (cust_startdate) {
+      req.data.cust_startdate = formatDate(cust_startdate)
+    }
+
+    if (cust_enddate) {
+      req.data.cust_enddate = formatDate(cust_enddate)
+    }
+
+    if (cust_ficha) {
+      req.data.cust_FichaNav = {
+        __metadata: {
+          uri: `/cust_ListadePresenca('${cust_ficha}')`,
+        },
+      }
+    }
+
+    if (cust_segmento) {
+      req.data.cust_SegmentoNav = {
+        __metadata: {
+          uri: `/cust_listadiaria('${cust_segmento}')`,
+        },
+      }
+    }
+
+    if (cust_turma) {
+      req.data.cust_TurmaNav = {
+        __metadata: {
+          uri: `/cust_Turmas('${cust_turma}')`,
+        },
+      }
+    }
+
+    try {
+      const response = await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/cust_presencalms',
+          data: payload,
+        }
+      )
+
+      const data = {
+        ...response.data.d,
+        cust_startdate: extractGetTime(response.data.d.cust_startdate),
+        cust_enddate: extractGetTime(response.data.d.cust_enddate),
+      }
+
+      return data
+    } catch (error) {
+      req.error({
+        code: error.status || '500',
+        message:
+          error?.response?.data?.error?.message?.value ||
+          'INTERNAL_SERVER_ERROR',
+      })
+    }
+  })
+
+  srv.on(
+    'READ',
+    'cust_presencalms',
+    async (req) => await successFactor.run(req.query)
+  )
+
+  srv.on('UPDATE', 'cust_presencalms', async (req) => {
+    const {
+      externalCode,
+      cust_startdate,
+      cust_enddate,
+      cust_ficha,
+      cust_segmento,
+      cust_turma,
+      ...data
+    } = req.data
+
+    const payload = {
+      __metadata: {
+        uri: 'cust_presencalms',
+      },
+      externalCode: externalCode,
+      ...data,
+    }
+
+    if (cust_startdate) {
+      payload.cust_startdate = formatDate(cust_startdate)
+    }
+
+    if (cust_enddate) {
+      payload.cust_enddate = formatDate(cust_enddate)
+    }
+
+    if (cust_ficha) {
+      payload.cust_FichaNav = {
+        __metadata: {
+          uri: `/cust_ListadePresenca('${cust_ficha}')`,
+        },
+      }
+    }
+
+    if (cust_segmento) {
+      payload.cust_SegmentoNav = {
+        __metadata: {
+          uri: `/cust_listadiaria('${cust_segmento}')`,
+        },
+      }
+    }
+
+    if (cust_turma) {
+      req.data.cust_TurmaNav = {
+        __metadata: {
+          uri: `/cust_Turmas('${cust_turma}')`,
+        },
+      }
+    }
+
+    try {
+      const response = await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: payload,
+        }
+      )
+
+      return response.data.d
+    } catch (error) {
+      req.error({
+        code: error.status || '500',
+        message:
+          error?.response?.data?.error?.message?.value ||
+          'INTERNAL_SERVER_ERROR',
+      })
+    }
+  })
+
+  srv.on(
+    'DELETE',
+    'cust_presencalms',
     async (req) => await successFactor.run(req.query)
   )
 
