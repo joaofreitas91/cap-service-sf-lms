@@ -10,6 +10,7 @@ module.exports = async (srv) => {
 
     // cust_ACT_CPNT_ID => ID do Curso
     const {
+      externalCode,
       cust_INST_ID1,
       cust_INST_ID2,
       cust_ACT_CPNT_ID,
@@ -60,6 +61,68 @@ module.exports = async (srv) => {
           data: payload,
         }
       )
+
+      const cust_ListadePresenca = await successFactor.run(
+        SELECT.from('cust_ListadePresenca').where({
+          cust_Turma: externalCode,
+        })
+      )
+
+      const classPayload = {
+        __metadata: {
+          uri: 'cust_Turmas',
+        },
+        externalCode: externalCode,
+        cust_ListaNav: cust_ListadePresenca.map(({ externalCode }) => {
+          return {
+            __metadata: {
+              uri: `/cust_ListadePresenca('${externalCode}')`,
+            },
+          }
+        }),
+      }
+
+      await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: classPayload,
+        }
+      )
+
+      const cust_ListadeDiaria = await successFactor.run(
+        SELECT.from('cust_listadiaria').where({
+          cust_turma: externalCode,
+        })
+      )
+
+      if (cust_ListadePresenca.length) {
+        const updateListDiaria = cust_ListadeDiaria.map(({ externalCode }) => {
+          return executeHttpRequest(
+            {
+              destinationName: 'SFSF',
+            },
+            {
+              method: 'POST',
+              url: '/upsert',
+              data: {
+                __metadata: {
+                  uri: 'cust_listadiaria',
+                },
+                externalCode,
+                cust_listaNav: cust_ListadePresenca.map(({ externalCode }) => ({
+                  externalCode,
+                })),
+              },
+            }
+          )
+        })
+
+        await Promise.all(updateListDiaria)
+      }
 
       delete response.data.d.cust_Inst1Nav
       delete response.data.d.cust_Inst2Nav
@@ -211,20 +274,6 @@ module.exports = async (srv) => {
       }
     }
 
-    const classPayload = {
-      __metadata: {
-        uri: 'cust_Turmas',
-      },
-      externalCode: cust_Turma,
-      cust_ListaNav: [
-        {
-          __metadata: {
-            uri: `/cust_ListadePresenca('${externalCode}')`,
-          },
-        },
-      ],
-    }
-
     try {
       const response = await executeHttpRequest(
         {
@@ -234,17 +283,6 @@ module.exports = async (srv) => {
           method: 'POST',
           url: '/cust_ListadePresenca',
           data: payload,
-        }
-      )
-
-      await executeHttpRequest(
-        {
-          destinationName: 'SFSF',
-        },
-        {
-          method: 'POST',
-          url: '/upsert',
-          data: classPayload,
         }
       )
 
@@ -522,6 +560,10 @@ module.exports = async (srv) => {
           data: payload,
         }
       )
+
+      delete response.data.d.cust_FichaNav
+      delete response.data.d.cust_SegmentoNav
+      delete response.data.d.cust_TurmaNav
 
       const data = {
         ...response.data.d,
