@@ -294,6 +294,75 @@ module.exports = async (srv) => {
         cust_enddate: extractGetTime(response.data.d.cust_enddate),
       }
 
+      const classes = await successFactor.run(
+        SELECT.from('cust_Turmas').where({
+          externalCode: cust_Turma,
+        })
+      )
+
+      if (classes.length) {
+        const custTurmaPayload = {
+          __metadata: {
+            uri: 'cust_Turmas',
+          },
+          externalCode: cust_Turma,
+        }
+
+        const a = await successFactor.run(
+          SELECT.from('cust_ListadePresenca').where({
+            cust_Turma: cust_Turma,
+          })
+        )
+
+        custTurmaPayload.cust_ListaNav = a.map(({ externalCode }) => {
+          return {
+            __metadata: {
+              uri: `/cust_ListadePresenca('${externalCode}')`,
+            },
+          }
+        })
+
+        await executeHttpRequest(
+          {
+            destinationName: 'SFSF',
+          },
+          {
+            method: 'POST',
+            url: '/upsert',
+            data: custTurmaPayload,
+          }
+        )
+
+        const cust_ListadeDiaria = await successFactor.run(
+          SELECT.from('cust_listadiaria').where({
+            cust_turma: cust_Turma,
+          })
+        )
+
+        const updateListDiaria = cust_ListadeDiaria.map(({ externalCode }) => {
+          return executeHttpRequest(
+            {
+              destinationName: 'SFSF',
+            },
+            {
+              method: 'POST',
+              url: '/upsert',
+              data: {
+                __metadata: {
+                  uri: 'cust_listadiaria',
+                },
+                externalCode,
+                cust_listaNav: classes.map(({ externalCode }) => ({
+                  externalCode,
+                })),
+              },
+            }
+          )
+        })
+
+        await Promise.all(updateListDiaria)
+      }
+
       return data
     } catch (error) {
       req.error({
