@@ -24,6 +24,8 @@ service SFSFService {
     *,
     cust_listaNav: Composition of many SFSF.cust_ListadePresenca
     on cust_listaNav.externalCode,
+    cust_presencaNav: Composition of many SFSF.cust_presencalms
+    on cust_presencaNav.externalCode,
     cust_turmanav: redirected to cust_Turmas,
     createdByNav: redirected to User,
     lastModifiedByNav: redirected to User,

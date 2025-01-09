@@ -112,11 +112,9 @@ module.exports = async (srv) => {
                 uri: 'cust_Turmas',
               },
               externalCode,
-              cust_SegmentoNav: cust_ListadeDiaria.map(
-                ({ externalCode }) => ({
-                  externalCode,
-                })
-              ),
+              cust_SegmentoNav: cust_ListadeDiaria.map(({ externalCode }) => ({
+                externalCode,
+              })),
             },
           }
         )
@@ -156,8 +154,12 @@ module.exports = async (srv) => {
 
       const data = {
         ...response.data.d,
-        cust_START_TME:response.data.d.cust_START_TME ?  extractGetTime(response.data.d.cust_START_TME) : null,
-        cust_END_TME: response.data.d.cust_END_TME ? extractGetTime(response.data.d.cust_END_TME) : null,
+        cust_START_TME: response.data.d.cust_START_TME
+          ? extractGetTime(response.data.d.cust_START_TME)
+          : null,
+        cust_END_TME: response.data.d.cust_END_TME
+          ? extractGetTime(response.data.d.cust_END_TME)
+          : null,
       }
 
       return data
@@ -600,6 +602,7 @@ module.exports = async (srv) => {
     const payload = req.data
 
     const {
+      externalCode,
       cust_startdate,
       cust_enddate,
       cust_ficha,
@@ -650,6 +653,31 @@ module.exports = async (srv) => {
           data: payload,
         }
       )
+
+      await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: {
+            __metadata: {
+              uri: 'cust_listadiaria',
+            },
+            externalCode: cust_segmento,
+            cust_presencaNav: [
+              {
+                __metadata: {
+                  uri: `/cust_presencalms('${externalCode}')`,
+                },
+              },
+            ],
+          },
+        }
+      )
+
+      debugger
 
       delete response.data.d.cust_FichaNav
       delete response.data.d.cust_SegmentoNav
