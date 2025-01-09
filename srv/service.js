@@ -173,6 +173,52 @@ module.exports = async (srv) => {
     }
   })
 
+  srv.after('CREATE', 'cust_Turmas', async (entity) => {
+    const { externalCode: turmaID } = entity
+
+    const listasDiaria = await successFactor.run(
+      SELECT.from('cust_listadiaria').where({
+        cust_turma: turmaID,
+      })
+    )
+
+    const promises = listasDiaria.map(({ externalCode }) => {
+      const custListaDiariaPayload = {
+        __metadata: {
+          uri: 'cust_listadiaria',
+        },
+        externalCode,
+        cust_turmanav: {
+          __metadata: {
+            uri: `/cust_Turmas('${turmaID}')`,
+          },
+        },
+      }
+
+      return executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: custListaDiariaPayload,
+        }
+      )
+    })
+
+    try {
+      await Promise.all(promises)
+    } catch (error) {
+      req.error({
+        code: error.status || '500',
+        message:
+          error?.response?.data?.error?.message?.value ||
+          'INTERNAL_SERVER_ERROR',
+      })
+    }
+  })
+
   srv.on(
     'READ',
     'cust_Turmas',
