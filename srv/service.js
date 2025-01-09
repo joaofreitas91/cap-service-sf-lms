@@ -226,7 +226,7 @@ module.exports = async (srv) => {
   )
 
   srv.on('UPDATE', 'cust_Turmas', async (req) => {
-    const { externalCode, cust_ListaNav, ...data } = req.data
+    const { externalCode, ...data } = req.data
 
     const payload = {
       __metadata: {
@@ -234,16 +234,6 @@ module.exports = async (srv) => {
       },
       externalCode: externalCode,
       ...data,
-    }
-
-    if (cust_ListaNav) {
-      payload.cust_ListaNav = cust_ListaNav.map(({ externalCode }) => {
-        return {
-          __metadata: {
-            uri: `/cust_ListadePresenca('${externalCode}')`,
-          },
-        }
-      })
     }
 
     try {
@@ -257,35 +247,6 @@ module.exports = async (srv) => {
           data: payload,
         }
       )
-
-      const registrationForms = await successFactor.run(
-        SELECT.from('cust_ListadePresenca').where({
-          cust_Turma: externalCode,
-        })
-      )
-
-      if (registrationForms.length) {
-        const pRegistrationForms = registrationForms.map((rf) => {
-          executeHttpRequest(
-            {
-              destinationName: 'SFSF',
-            },
-            {
-              method: 'POST',
-              url: '/upsert',
-              data: {
-                __metadata: {
-                  uri: 'cust_ListadePresenca',
-                },
-                externalCode: rf.externalCode,
-                cust_LMS: data.cust_LMS,
-              },
-            }
-          )
-        })
-
-        Promise.all(pRegistrationForms)
-      }
 
       return response.data.d
     } catch (error) {
