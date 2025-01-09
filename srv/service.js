@@ -100,6 +100,27 @@ module.exports = async (srv) => {
       )
 
       if (cust_ListadePresenca.length) {
+        await executeHttpRequest(
+          {
+            destinationName: 'SFSF',
+          },
+          {
+            method: 'POST',
+            url: '/upsert',
+            data: {
+              __metadata: {
+                uri: 'cust_Turmas',
+              },
+              externalCode,
+              cust_SegmentoNav: cust_ListadeDiaria.map(
+                ({ externalCode }) => ({
+                  externalCode,
+                })
+              ),
+            },
+          }
+        )
+
         const updateListDiaria = cust_ListadeDiaria.map(({ externalCode }) => {
           return executeHttpRequest(
             {
@@ -135,8 +156,8 @@ module.exports = async (srv) => {
 
       const data = {
         ...response.data.d,
-        cust_START_TME: extractGetTime(response.data.d.cust_START_TME),
-        cust_END_TME: extractGetTime(response.data.d.cust_END_TME),
+        cust_START_TME:response.data.d.cust_START_TME ?  extractGetTime(response.data.d.cust_START_TME) : null,
+        cust_END_TME: response.data.d.cust_END_TME ? extractGetTime(response.data.d.cust_END_TME) : null,
       }
 
       return data
