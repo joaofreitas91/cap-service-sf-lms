@@ -181,8 +181,13 @@ module.exports = async (srv) => {
         cust_turma: turmaID,
       })
     )
+    const listasPresenca = await successFactor.run(
+      SELECT.from('cust_ListadePresenca').where({
+        cust_Turma: turmaID,
+      })
+    )
 
-    const promises = listasDiaria.map(({ externalCode }) => {
+    const pListasDiaria = listasDiaria.map(({ externalCode }) => {
       const custListaDiariaPayload = {
         __metadata: {
           uri: 'cust_listadiaria',
@@ -207,8 +212,34 @@ module.exports = async (srv) => {
       )
     })
 
+    const pListasPresenca = listasPresenca.map(({ externalCode }) => {
+      const custListaPresencaPayload = {
+        __metadata: {
+          uri: 'cust_ListadePresenca',
+        },
+        externalCode,
+        cust_TurmaNav: {
+          __metadata: {
+            uri: `/cust_Turmas('${turmaID}')`,
+          },
+        },
+      }
+
+      return executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'POST',
+          url: '/upsert',
+          data: custListaPresencaPayload,
+        }
+      )
+    })
+
     try {
-      await Promise.all(promises)
+      await Promise.all(pListasDiaria)
+      await Promise.all(pListasPresenca)
     } catch (error) {
       req.error({
         code: error.status || '500',
@@ -683,8 +714,6 @@ module.exports = async (srv) => {
           },
         }
       )
-
-      debugger
 
       delete response.data.d.cust_FichaNav
       delete response.data.d.cust_SegmentoNav
