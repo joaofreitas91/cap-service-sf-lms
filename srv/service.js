@@ -279,6 +279,64 @@ module.exports = async (srv) => {
         }
       )
 
+      const registrationForms = await successFactor.run(
+        SELECT.from('cust_ListadePresenca').where({
+          cust_Turma: externalCode,
+        })
+      )
+
+      const attendanceLists = await successFactor.run(
+        SELECT.from('cust_listadiaria').where({
+          cust_turma: externalCode,
+        })
+      )
+
+      if (registrationForms.length) {
+        const pRegistrationForms = registrationForms.map((rf) => {
+          executeHttpRequest(
+            {
+              destinationName: 'SFSF',
+            },
+            {
+              method: 'POST',
+              url: '/upsert',
+              data: {
+                __metadata: {
+                  uri: 'cust_ListadePresenca',
+                },
+                externalCode: rf.externalCode,
+                cust_LMS: data.cust_LMS,
+              },
+            }
+          )
+        })
+
+        Promise.all(pRegistrationForms)
+      }
+
+      if (attendanceLists.length) {
+        const pAttendanceLists = attendanceLists.map((al) => {
+          executeHttpRequest(
+            {
+              destinationName: 'SFSF',
+            },
+            {
+              method: 'POST',
+              url: '/upsert',
+              data: {
+                __metadata: {
+                  uri: 'cust_listadiaria',
+                },
+                externalCode: al.externalCode,
+                cust_lms: data.cust_LMS,
+              },
+            }
+          )
+        })
+
+        Promise.all(pAttendanceLists)
+      }
+
       return response.data.d
     } catch (error) {
       req.error({
