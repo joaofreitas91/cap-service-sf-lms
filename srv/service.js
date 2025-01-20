@@ -223,6 +223,13 @@ module.exports = async (srv) => {
             uri: `/cust_Turmas('${turmaID}')`,
           },
         },
+        cust_SegmentoNav: listasDiaria.map(({ externalCode }) => {
+          return {
+            __metadata: {
+              uri: `/cust_listadiaria('${externalCode}')`,
+            },
+          }
+        }),
       }
 
       return executeHttpRequest(
