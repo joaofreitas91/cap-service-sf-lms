@@ -264,13 +264,13 @@ module.exports = async (srv) => {
   )
 
   srv.on('UPDATE', 'cust_Turmas', async (req) => {
-    const { externalCode, ...data } = req.data
+    const { externalCode: classId, ...data } = req.data
 
     const payload = {
       __metadata: {
         uri: 'cust_Turmas',
       },
-      externalCode: externalCode,
+      externalCode: classId,
       ...data,
     }
 
@@ -288,13 +288,13 @@ module.exports = async (srv) => {
 
       const registrationForms = await successFactor.run(
         SELECT.from('cust_ListadePresenca').where({
-          cust_Turma: externalCode,
+          cust_Turma: classId,
         })
       )
 
       const attendanceLists = await successFactor.run(
         SELECT.from('cust_listadiaria').where({
-          cust_turma: externalCode,
+          cust_turma: classId,
         })
       )
 
@@ -344,24 +344,24 @@ module.exports = async (srv) => {
         Promise.all(pAttendanceLists)
       }
 
-      const cust_ListadePresenca = await successFactor.run(
-        SELECT.from('cust_ListadePresenca').where({
-          cust_Turma: 'cm5mi0njc7kz543y9',
-        })
-      )
+      // const registrationForms = await successFactor.run(
+      //   SELECT.from('cust_ListadePresenca').where({
+      //     cust_Turma: classId,
+      //   })
+      // )
 
       const cust_presencalms = await successFactor.run(
         SELECT.from('cust_presencalms').where({
-          cust_turma: 'cm5mi0njc7kz543y9',
+          cust_turma: classId,
           cust_ficha: {
-            in: cust_ListadePresenca.map((ficha) => ficha.externalCode),
+            in: registrationForms.map((ficha) => ficha.externalCode),
           },
         })
       )
 
       const failedStudents = []
 
-      cust_ListadePresenca.forEach((ficha) => {
+      registrationForms.forEach((ficha) => {
         const cust_presencalmsBycust_ficha = cust_presencalms.filter(
           (presenca) => presenca.cust_ficha === ficha.externalCode
         )
