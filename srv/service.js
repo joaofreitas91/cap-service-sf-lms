@@ -344,6 +344,63 @@ module.exports = async (srv) => {
         Promise.all(pAttendanceLists)
       }
 
+      const cust_ListadePresenca = await successFactor.run(
+        SELECT.from('cust_ListadePresenca').where({
+          cust_Turma: 'cm5mi0njc7kz543y9',
+        })
+      )
+
+      const cust_presencalms = await successFactor.run(
+        SELECT.from('cust_presencalms').where({
+          cust_turma: 'cm5mi0njc7kz543y9',
+          cust_ficha: {
+            in: cust_ListadePresenca.map((ficha) => ficha.externalCode),
+          },
+        })
+      )
+
+      const failedStudents = []
+
+      cust_ListadePresenca.forEach((ficha) => {
+        const cust_presencalmsBycust_ficha = cust_presencalms.filter(
+          (presenca) => presenca.cust_ficha === ficha.externalCode
+        )
+        const numberOfTrainingDays = cust_presencalmsBycust_ficha.length
+        const numberOfStudentsAttendence = cust_presencalmsBycust_ficha.filter(
+          ({ cust_presenca }) => cust_presenca === 'presente'
+        ).length
+        const studentAttendence =
+          (numberOfStudentsAttendence / numberOfTrainingDays) * 100
+        const isReproved = studentAttendence < 75
+
+        if (isReproved) {
+          failedStudents.push(ficha.externalCode)
+        }
+      })
+
+      const pFailedStudents = failedStudents.map((externalCode) => {
+        return executeHttpRequest(
+          {
+            destinationName: 'SFSF',
+          },
+          {
+            method: 'POST',
+            url: '/upsert',
+            data: {
+              __metadata: {
+                uri: 'cust_ListadePresenca',
+              },
+              externalCode: externalCode,
+              cust_resultado: 'cancelado',
+            },
+          }
+        )
+      })
+
+      if (pFailedStudents.length) {
+        Promise.all(pFailedStudents)
+      }
+
       return response.data.d
     } catch (error) {
       req.error({
