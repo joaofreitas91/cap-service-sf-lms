@@ -350,7 +350,7 @@ module.exports = async (srv) => {
       //   })
       // )
 
-      const cust_presencalms = await successFactor.run(
+      const filterAttendencelmsByRegistrationForm = await successFactor.run(
         SELECT.from('cust_presencalms').where({
           cust_turma: classId,
           cust_ficha: {
@@ -362,9 +362,10 @@ module.exports = async (srv) => {
       const failedStudents = []
 
       registrationForms.forEach((ficha) => {
-        const cust_presencalmsBycust_ficha = cust_presencalms.filter(
-          (presenca) => presenca.cust_ficha === ficha.externalCode
-        )
+        const cust_presencalmsBycust_ficha =
+          filterAttendencelmsByRegistrationForm.filter(
+            (presenca) => presenca.cust_ficha === ficha.externalCode
+          )
         const numberOfTrainingDays = cust_presencalmsBycust_ficha.length
         const numberOfStudentsAttendence = cust_presencalmsBycust_ficha.filter(
           ({ cust_presenca }) => cust_presenca === 'presente'
@@ -401,6 +402,62 @@ module.exports = async (srv) => {
         Promise.all(pFailedStudents)
       }
 
+      const attendencelms = await executeHttpRequest(
+        {
+          destinationName: 'SFSF',
+        },
+        {
+          method: 'GET',
+          url: `/cust_presencalms?$expand=cust_FichaNav&$filter=cust_turma eq ${classId}`,
+        }
+      )
+
+      const findClass = await successFactor.run(
+        SELECT.from('cust_Turmas').where({
+          externalCode: classId,
+        })
+      )
+
+      const { cust_INST_ID1, cust_INST_ID2 } = findClass[0]
+
+      const filterAttendencelms = attendencelms.data.d.results
+        .filter((al) => {
+          return !al.cust_presenca
+        })
+        .filter((al) => {
+          if (cust_INST_ID1) {
+            return cust_INST_ID1 !== al.cust_FichaNav.cust_Aluno
+          }
+
+          if (cust_INST_ID2) {
+            return cust_INST_ID2 !== al.cust_FichaNav.cust_Aluno
+          }
+        })
+
+      if (filterAttendencelms.length) {
+        const attendencelmsRequests = filterAttendencelms.map(
+          ({ externalCode }) =>
+            executeHttpRequest(
+              {
+                destinationName: 'SFSF',
+              },
+              {
+                method: 'POST',
+                url: '/upsert',
+                data: {
+                  __metadata: {
+                    uri: 'cust_presencalms',
+                  },
+                  externalCode: externalCode,
+                  cust_presenca: 'presente',
+                },
+              }
+            )
+        )
+
+        Promise.all(attendencelmsRequests)
+      }
+
       return response.data.d
     } catch (error) {
       req.error({
@@ -411,6 +468,60 @@ module.exports = async (srv) => {
       })
     }
   })
+
+  // srv.on('test', async ({ data: { classId } }) => {
+  //   const attendencelms = await executeHttpRequest(
+  //     {
+  //       destinationName: 'SFSF',
+  //     },
+  //     {
+  //       method: 'GET',
+  //       url: `/cust_presencalms?$expand=cust_FichaNav&$filter=cust_turma eq ${classId}`,
+  //     }
+  //   )
+
+  //   const findClass = await successFactor.run(
+  //     SELECT.from('cust_Turmas').where({
+  //       externalCode: classId,
+  //     })
+  //   )
+
+  //   const { cust_INST_ID1, cust_INST_ID2 } = findClass[0]
+
+  //   const filterAttendencelms = attendencelms.data.d.results.filter((al) => {
+  //     return (
+  //       !al.cust_presenca ||
+  //       (al.cust_FichaNav.cust_Aluno &&
+  //         al.cust_FichaNav.cust_Aluno !== cust_INST_ID1) ||
+  //       (al.cust_FichaNav.cust_Aluno &&
+  //         al.cust_FichaNav.cust_Aluno !== cust_INST_ID2)
+  //     )
+  //   })
+
+  //   if (filterAttendencelms.length) {
+  //     const attendencelmsRequests = filterAttendencelms.map(
+  //       ({ externalCode }) =>
+  //         executeHttpRequest(
+  //           {
+  //             destinationName: 'SFSF',
+  //           },
+  //           {
+  //             method: 'POST',
+  //             url: '/upsert',
+  //             data: {
+  //               __metadata: {
+  //                 uri: 'cust_presencalms',
+  //               },
+  //               externalCode: externalCode,
+  //               cust_presenca: 'presente',
+  //             },
+  //           }
+  //         )
+  //     )
+
+  //     Promise.all(attendencelmsRequests)
+  //   }
+  // })
 
   srv.on(
     'DELETE',
