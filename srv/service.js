@@ -425,13 +425,11 @@ module.exports = async (srv) => {
           return !al.cust_presenca
         })
         .filter((al) => {
-          if (cust_INST_ID1) {
-            return cust_INST_ID1 !== al.cust_FichaNav.cust_Aluno
+          if (cust_INST_ID1 === al.cust_FichaNav.cust_Aluno || cust_INST_ID2 === al.cust_FichaNav.cust_Aluno) {
+            return false
           }
 
-          if (cust_INST_ID2) {
-            return cust_INST_ID2 !== al.cust_FichaNav.cust_Aluno
-          }
+          return true
         })
 
       if (filterAttendencelms.length) {
@@ -615,6 +613,28 @@ module.exports = async (srv) => {
             },
           }
         })
+
+
+        await executeHttpRequest(
+          {
+            destinationName: 'SFSF',
+          },
+          {
+            method: 'POST',
+            url: '/upsert',
+            data: {
+              __metadata: {
+                uri: 'cust_ListadePresenca',
+              },
+              externalCode,
+              cust_TurmaNav: {
+                __metadata: {
+                  uri: `/cust_Turmas('${cust_Turma}')`,
+                },
+              }
+            },
+          }
+        )
 
         await executeHttpRequest(
           {
