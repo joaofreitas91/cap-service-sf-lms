@@ -318,7 +318,7 @@ module.exports = async (srv) => {
           )
         })
 
-        Promise.all(pRegistrationForms)
+        await Promise.all(pRegistrationForms)
       }
 
       if (attendanceLists.length) {
@@ -341,7 +341,7 @@ module.exports = async (srv) => {
           )
         })
 
-        Promise.all(pAttendanceLists)
+        await Promise.all(pAttendanceLists)
       }
 
       // const registrationForms = await successFactor.run(
@@ -392,14 +392,14 @@ module.exports = async (srv) => {
                 uri: 'cust_ListadePresenca',
               },
               externalCode: externalCode,
-              cust_resultado: 'cancelado',
+              cust_resultado: 'reprovado',
             },
           }
         )
       })
 
       if (pFailedStudents.length) {
-        Promise.all(pFailedStudents)
+        await Promise.all(pFailedStudents)
       }
 
       const attendencelms = await executeHttpRequest(
@@ -408,7 +408,7 @@ module.exports = async (srv) => {
         },
         {
           method: 'GET',
-          url: `/cust_presencalms?$expand=cust_FichaNav&$filter=cust_turma eq ${classId}`,
+          url: `/cust_presencalms?$expand=cust_FichaNav&$filter=cust_turma eq '${classId}'`,
         }
       )
 
@@ -453,7 +453,7 @@ module.exports = async (srv) => {
             )
         )
 
-        Promise.all(attendencelmsRequests)
+        await Promise.all(attendencelmsRequests)
       }
 
       return response.data.d
