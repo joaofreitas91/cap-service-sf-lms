@@ -1,6 +1,10 @@
 const cds = require('@sap/cds')
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client')
-const { formatDate, extractGetTime } = require('./utils/formatters.js')
+const {
+  formatDate,
+  extractGetTime,
+  convertDataToUTCZero,
+} = require('./utils/formatters.js')
 
 module.exports = async (srv) => {
   const successFactor = await cds.connect.to('SFSF')
@@ -344,12 +348,6 @@ module.exports = async (srv) => {
         await Promise.all(pAttendanceLists)
       }
 
-      // const registrationForms = await successFactor.run(
-      //   SELECT.from('cust_ListadePresenca').where({
-      //     cust_Turma: classId,
-      //   })
-      // )
-
       const filterAttendencelmsByRegistrationForm = await successFactor.run(
         SELECT.from('cust_presencalms').where({
           cust_turma: classId,
@@ -418,14 +416,17 @@ module.exports = async (srv) => {
         })
       )
 
-      const { cust_INST_ID1, cust_INST_ID2 } = findClass[0]
+      const { cust_INST_ID1, cust_INST_ID2, cust_fromApp } = findClass[0]
 
       const filterAttendencelms = attendencelms.data.d.results
         .filter((al) => {
           return !al.cust_presenca
         })
         .filter((al) => {
-          if (cust_INST_ID1 === al.cust_FichaNav.cust_Aluno || cust_INST_ID2 === al.cust_FichaNav.cust_Aluno) {
+          if (
+            cust_INST_ID1 === al.cust_FichaNav.cust_Aluno ||
+            cust_INST_ID2 === al.cust_FichaNav.cust_Aluno
+          ) {
             return false
           }
 
@@ -448,6 +449,31 @@ module.exports = async (srv) => {
                   },
                   externalCode: externalCode,
                   cust_presenca: 'presente',
+                },
+              }
+            )
+        )
+
+        await Promise.all(attendencelmsRequests)
+      }
+
+      if (cust_fromApp) {
+        const attendencelmsRequests = attendanceLists.map(
+          ({ externalCode, cust_startdate, cust_enddate }) =>
+            executeHttpRequest(
+              {
+                destinationName: 'SFSF',
+              },
+              {
+                method: 'POST',
+                url: '/upsert',
+                data: {
+                  __metadata: {
+                    uri: 'cust_listadiaria',
+                  },
+                  externalCode: externalCode,
+                  cust_startdate: convertDataToUTCZero(cust_startdate),
+                  cust_enddate: convertDataToUTCZero(cust_enddate),
                 },
               }
             )
@@ -614,7 +640,6 @@ module.exports = async (srv) => {
           }
         })
 
-
         await executeHttpRequest(
           {
             destinationName: 'SFSF',
@@ -631,7 +656,7 @@ module.exports = async (srv) => {
                 __metadata: {
                   uri: `/cust_Turmas('${cust_Turma}')`,
                 },
-              }
+              },
             },
           }
         )

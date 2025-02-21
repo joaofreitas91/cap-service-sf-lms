@@ -12,7 +12,14 @@ function extractGetTime(date) {
   return new Date(Number(timestamp)).toISOString().slice(0, -5).concat('Z')
 }
 
+function convertDataToUTCZero(date) {
+  const data = new Date(date);
+  data.setHours(data.getHours() - 3);
+  return formatDate(data.toISOString());
+}
+
 module.exports = {
   formatDate,
   extractGetTime,
+  convertDataToUTCZero
 }
