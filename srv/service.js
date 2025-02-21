@@ -360,20 +360,23 @@ module.exports = async (srv) => {
       const failedStudents = []
 
       registrationForms.forEach((ficha) => {
-        const cust_presencalmsBycust_ficha =
-          filterAttendencelmsByRegistrationForm.filter(
-            (presenca) => presenca.cust_ficha === ficha.externalCode
-          )
-        const numberOfTrainingDays = cust_presencalmsBycust_ficha.length
-        const numberOfStudentsAttendence = cust_presencalmsBycust_ficha.filter(
-          ({ cust_presenca }) => cust_presenca === 'presente'
-        ).length
-        const studentAttendence =
-          (numberOfStudentsAttendence / numberOfTrainingDays) * 100
-        const isReproved = studentAttendence < 75
+        if (!ficha.cust_resultado) {
+          const cust_presencalmsBycust_ficha =
+            filterAttendencelmsByRegistrationForm.filter(
+              (presenca) => presenca.cust_ficha === ficha.externalCode
+            )
+          const numberOfTrainingDays = cust_presencalmsBycust_ficha.length
+          const numberOfStudentsAttendence =
+            cust_presencalmsBycust_ficha.filter(
+              ({ cust_presenca }) => cust_presenca !== 'ausente'
+            ).length
+          const studentAttendence =
+            (numberOfStudentsAttendence / numberOfTrainingDays) * 100
+          const isReproved = studentAttendence < 75
 
-        if (isReproved) {
-          failedStudents.push(ficha.externalCode)
+          if (isReproved) {
+            failedStudents.push(ficha.externalCode)
+          }
         }
       })
 
@@ -390,7 +393,7 @@ module.exports = async (srv) => {
                 uri: 'cust_ListadePresenca',
               },
               externalCode: externalCode,
-              cust_resultado: 'reprovado',
+              cust_resultado: 'ausente',
             },
           }
         )
