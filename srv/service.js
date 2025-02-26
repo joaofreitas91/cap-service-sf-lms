@@ -629,13 +629,13 @@ module.exports = async (srv) => {
           externalCode: cust_Turma,
         }
 
-        const a = await successFactor.run(
+        const cust_ListadePresenca = await successFactor.run(
           SELECT.from('cust_ListadePresenca').where({
             cust_Turma: cust_Turma,
           })
         )
 
-        custTurmaPayload.cust_ListaNav = a.map(({ externalCode }) => {
+        custTurmaPayload.cust_ListaNav = cust_ListadePresenca.map(({ externalCode }) => {
           return {
             __metadata: {
               uri: `/cust_ListadePresenca('${externalCode}')`,
@@ -694,7 +694,7 @@ module.exports = async (srv) => {
                   uri: 'cust_listadiaria',
                 },
                 externalCode,
-                cust_listaNav: classes.map(({ externalCode }) => ({
+                cust_listaNav: cust_ListadePresenca.map(({ externalCode }) => ({
                   externalCode,
                 })),
               },
