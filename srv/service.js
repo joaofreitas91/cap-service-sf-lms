@@ -798,7 +798,7 @@ module.exports = async (srv) => {
   srv.on('CREATE', 'cust_listadiaria', async (req) => {
     const payload = req.data
 
-    const { cust_startdate, cust_enddate, cust_listaNav } = payload
+    const { cust_startdate, cust_enddate, /* cust_listaNav */ } = payload
 
     if (cust_startdate) {
       req.data.cust_startdate = formatDate(cust_startdate)
@@ -808,15 +808,16 @@ module.exports = async (srv) => {
       req.data.cust_enddate = formatDate(cust_enddate)
     }
 
-    if (cust_listaNav) {
-      req.data.cust_listaNav = cust_listaNav.map(({ externalCode }) => {
-        return {
-          __metadata: {
-            uri: `/cust_ListadePresenca('${externalCode}')`,
-          },
-        }
-      })
-    }
+
+    // if (cust_listaNav) {
+    //   req.data.cust_listaNav = cust_listaNav.map(({ externalCode }) => {
+    //     return {
+    //       __metadata: {
+    //         uri: `/cust_ListadePresenca('${externalCode}')`,
+    //       },
+    //     }
+    //   })
+    // }
 
     try {
       const response = await executeHttpRequest(
