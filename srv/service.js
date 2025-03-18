@@ -357,6 +357,19 @@ module.exports = async (srv) => {
         })
       )
 
+      const {
+        cust_INST_ID1,
+        cust_INST_ID2,
+        cust_START_TME,
+        cust_END_TME,
+        cust_fromApp,
+        cust_CPNT_TYP_ID,
+      } = await successFactor.run(
+        SELECT.one.from('cust_Turmas').where({
+          externalCode: classId,
+        })
+      )
+
       const failedStudents = []
 
       registrationForms.forEach((ficha) => {
@@ -393,7 +406,10 @@ module.exports = async (srv) => {
                 uri: 'cust_ListadePresenca',
               },
               externalCode: externalCode,
-              cust_resultado: 'ausente',
+              cust_resultado:
+                cust_CPNT_TYP_ID === 'treinamento'
+                  ? 'Treinamento_ausente'
+                  : 'portal_ausente',
             },
           }
         )
@@ -412,22 +428,6 @@ module.exports = async (srv) => {
           url: `/cust_presencalms?$expand=cust_FichaNav&$filter=cust_turma eq '${classId}'`,
         }
       )
-
-      const findClass = await successFactor.run(
-        SELECT.from('cust_Turmas').where({
-          externalCode: classId,
-        })
-      )
-
-      const {
-        cust_INST_ID1,
-        cust_INST_ID2,
-        cust_START_TME,
-        cust_END_TME,
-        cust_fromApp,
-      } = findClass[0]
-
-      debugger
 
       const filterAttendencelms = attendencelms.data.d.results
         .filter((al) => {
@@ -468,6 +468,57 @@ module.exports = async (srv) => {
         await Promise.all(attendencelmsRequests)
       }
 
+      //come back
+
+      const selectRegistrationForms = await successFactor.run(
+        SELECT.from('cust_ListadePresenca').where({
+          cust_Turma: classId,
+          and: {
+            cust_resultado: null, //aprovados
+            or: {
+              cust_resultado: 'Reprovado',
+            },
+          },
+        })
+      )
+
+      if (selectRegistrationForms.length) {
+        const registrationFormsRequests = selectRegistrationForms.map(
+          ({ externalCode, cust_resultado }) => {
+            let statusResult = ''
+            const isTraining = cust_CPNT_TYP_ID === 'treinamento'
+
+            if (cust_resultado === 'Reprovado') {
+              statusResult = isTraining ? 'Reprovado' : 'portal_nao_aprovado'
+            } else {
+              //approved case
+              statusResult = isTraining
+                ? 'Treinamento_realizado'
+                : 'portal_realizado'
+            }
+
+            return executeHttpRequest(
+              {
+                destinationName: 'SFSF',
+              },
+              {
+                method: 'POST',
+                url: '/upsert',
+                data: {
+                  __metadata: {
+                    uri: 'cust_ListadePresenca',
+                  },
+                  externalCode: externalCode,
+                  cust_resultado: statusResult,
+                },
+              }
+            )
+          }
+        )
+
+        await Promise.all(registrationFormsRequests)
+      }
+
       if (cust_fromApp) {
         const attendencelmsRequests = attendanceLists.map(
           ({ externalCode, cust_startdate, cust_enddate }) =>
@@ -503,6 +554,10 @@ module.exports = async (srv) => {
       })
     }
   })
+
+  // srv.after('UPDATE', 'cust_Turmas', async (req) => {
+  //   const { externalCode: classId } = req.data
+  // })
 
   // srv.on('test', async ({ data: { classId } }) => {
   //   const attendencelms = await executeHttpRequest(
