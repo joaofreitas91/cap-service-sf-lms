@@ -419,7 +419,15 @@ module.exports = async (srv) => {
         })
       )
 
-      const { cust_INST_ID1, cust_INST_ID2, cust_fromApp } = findClass[0]
+      const {
+        cust_INST_ID1,
+        cust_INST_ID2,
+        cust_START_TME,
+        cust_END_TME,
+        cust_fromApp,
+      } = findClass[0]
+
+      debugger
 
       const filterAttendencelms = attendencelms.data.d.results
         .filter((al) => {
@@ -475,8 +483,8 @@ module.exports = async (srv) => {
                     uri: 'cust_listadiaria',
                   },
                   externalCode: externalCode,
-                  cust_startdate: convertDataToUTCZero(cust_startdate),
-                  cust_enddate: convertDataToUTCZero(cust_enddate),
+                  cust_startdate: convertDataToUTCZero(cust_START_TME),
+                  cust_enddate: convertDataToUTCZero(cust_END_TME),
                 },
               }
             )
@@ -635,13 +643,15 @@ module.exports = async (srv) => {
           })
         )
 
-        custTurmaPayload.cust_ListaNav = cust_ListadePresenca.map(({ externalCode }) => {
-          return {
-            __metadata: {
-              uri: `/cust_ListadePresenca('${externalCode}')`,
-            },
+        custTurmaPayload.cust_ListaNav = cust_ListadePresenca.map(
+          ({ externalCode }) => {
+            return {
+              __metadata: {
+                uri: `/cust_ListadePresenca('${externalCode}')`,
+              },
+            }
           }
-        })
+        )
 
         await executeHttpRequest(
           {
@@ -798,7 +808,7 @@ module.exports = async (srv) => {
   srv.on('CREATE', 'cust_listadiaria', async (req) => {
     const payload = req.data
 
-    const { cust_startdate, cust_enddate, /* cust_listaNav */ } = payload
+    const { cust_startdate, cust_enddate /* cust_listaNav */ } = payload
 
     if (cust_startdate) {
       req.data.cust_startdate = formatDate(cust_startdate)
@@ -807,7 +817,6 @@ module.exports = async (srv) => {
     if (cust_enddate) {
       req.data.cust_enddate = formatDate(cust_enddate)
     }
-
 
     // if (cust_listaNav) {
     //   req.data.cust_listaNav = cust_listaNav.map(({ externalCode }) => {
