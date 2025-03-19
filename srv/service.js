@@ -476,7 +476,7 @@ module.exports = async (srv) => {
           and: {
             cust_resultado: null, //aprovados
             or: {
-              cust_resultado: 'Reprovado',
+              cust_resultado: 'reprovado',
             },
           },
         })
@@ -488,7 +488,7 @@ module.exports = async (srv) => {
             let statusResult = ''
             const isTraining = cust_CPNT_TYP_ID === 'treinamento'
 
-            if (cust_resultado === 'Reprovado') {
+            if (cust_resultado === 'reprovado') {
               statusResult = isTraining ? 'Reprovado' : 'portal_nao_aprovado'
             } else {
               //approved case
@@ -619,11 +619,27 @@ module.exports = async (srv) => {
     async (req) => await successFactor.run(req.query)
   )
 
-  srv.on(
-    'READ',
-    'cust_Cursos',
-    async (req) => await successFactor.run(req.query)
-  )
+  srv.on('READ', 'cust_Cursos', async (req) => {
+    const course = await successFactor.run(req.query)
+
+    if (Array.isArray(course)) {
+      const coursesWithCapitalizeTitle = course.map((course) => ({
+        ...course,
+        cust_CPNT_TITLE: course.cust_CPNT_TITLE
+          ? course.cust_CPNT_TITLE.toUpperCase()
+          : '',
+      }))
+
+      return coursesWithCapitalizeTitle
+    }
+
+    return {
+      ...course,
+      cust_CPNT_TITLE: course.cust_CPNT_TITLE
+        ? course.cust_CPNT_TITLE.toUpperCase()
+        : '',
+    }
+  })
 
   srv.on(
     'READ',
