@@ -261,7 +261,6 @@ module.exports = async (srv) => {
     }
   })
 
-  //volta
   srv.on('READ', 'cust_Turmas', async (req) => {
     const team = await successFactor.run(req.query)
 
