@@ -261,11 +261,24 @@ module.exports = async (srv) => {
     }
   })
 
-  srv.on(
-    'READ',
-    'cust_Turmas',
-    async (req) => await successFactor.run(req.query)
-  )
+  //volta
+  srv.on('READ', 'cust_Turmas', async (req) => {
+    const team = await successFactor.run(req.query)
+
+    if (Array.isArray(team)) {
+      const teams = team.map((team) => ({
+        ...team,
+        cust_fromApp: !!team.cust_fromApp
+      }))
+
+      return teams
+    }
+
+    return {
+      ...team,
+      cust_fromApp: !!team.cust_fromApp
+    }
+  })
 
   srv.on('UPDATE', 'cust_Turmas', async (req) => {
     const { externalCode: classId, ...data } = req.data
@@ -682,7 +695,10 @@ module.exports = async (srv) => {
         {
           method: 'POST',
           url: '/cust_ListadePresenca',
-          data: payload,
+          data: {
+            ...payload,
+            cust_fromApp: true,
+          },
         }
       )
 
