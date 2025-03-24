@@ -267,7 +267,7 @@ module.exports = async (srv) => {
     if (Array.isArray(team)) {
       const teams = team.map((team) => ({
         ...team,
-        cust_fromApp: !!team.cust_fromApp
+        cust_fromApp: !!team.cust_fromApp,
       }))
 
       return teams
@@ -275,7 +275,7 @@ module.exports = async (srv) => {
 
     return {
       ...team,
-      cust_fromApp: !!team.cust_fromApp
+      cust_fromApp: !!team.cust_fromApp,
     }
   })
 
@@ -480,8 +480,6 @@ module.exports = async (srv) => {
         await Promise.all(attendencelmsRequests)
       }
 
-      //come back
-
       const selectRegistrationForms = await successFactor.run(
         SELECT.from('cust_ListadePresenca').where({
           cust_Turma: classId,
@@ -635,12 +633,14 @@ module.exports = async (srv) => {
     const course = await successFactor.run(req.query)
 
     if (Array.isArray(course)) {
-      const coursesWithCapitalizeTitle = course.map((course) => ({
-        ...course,
-        cust_CPNT_TITLE: course.cust_CPNT_TITLE
-          ? course.cust_CPNT_TITLE.toUpperCase()
-          : '',
-      }))
+      const coursesWithCapitalizeTitle = course.map((course) => {
+        return {
+          ...course,
+          cust_CPNT_TITLE: course.cust_CPNT_TITLE
+            ? course.cust_CPNT_TITLE.toUpperCase()
+            : '',
+        }
+      })
 
       return coursesWithCapitalizeTitle
     }
