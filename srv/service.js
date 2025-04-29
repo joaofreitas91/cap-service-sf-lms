@@ -55,6 +55,36 @@ module.exports = async (srv) => {
     }
 
     try {
+      const findAlreadyExist = await successFactor.run(
+        SELECT.one.from('cust_Turmas').where({
+          externalCode,
+        })
+      )
+
+      if (findAlreadyExist) {
+        delete findAlreadyExist.cust_Inst1Nav
+        delete findAlreadyExist.cust_Inst2Nav
+        delete findAlreadyExist.cust_CursosNav
+        delete findAlreadyExist.lastModifiedByNav
+        delete findAlreadyExist.cust_SegmentoNav
+        delete findAlreadyExist.mdfSystemRecordStatusNav
+        delete findAlreadyExist.cust_ListaNav
+        delete findAlreadyExist.wfRequestNav
+        delete findAlreadyExist.createdByNav
+
+        const data = {
+          ...findAlreadyExist,
+          cust_START_TME: findAlreadyExist.cust_START_TME
+            ? extractGetTime(findAlreadyExist.cust_START_TME)
+            : null,
+          cust_END_TME: findAlreadyExist.cust_END_TME
+            ? extractGetTime(findAlreadyExist.cust_END_TME)
+            : null,
+        }
+
+        return data
+      }
+
       const response = await executeHttpRequest(
         {
           destinationName: 'SFSF',
@@ -689,6 +719,30 @@ module.exports = async (srv) => {
     }
 
     try {
+      const findAlreadyExist = await successFactor.run(
+        SELECT.one.from('cust_ListadePresenca').where({
+          externalCode,
+        })
+      )
+
+      if (findAlreadyExist) {
+        delete findAlreadyExist.cust_AlunosNav
+        delete findAlreadyExist.cust_SegmentoNav
+        delete findAlreadyExist.cust_TurmaNav
+        delete findAlreadyExist.createdByNav
+        delete findAlreadyExist.lastModifiedByNav
+        delete findAlreadyExist.mdfSystemRecordStatusNav
+        delete findAlreadyExist.wfRequestNav
+
+        const data = {
+          ...findAlreadyExist,
+          cust_startdate: extractGetTime(findAlreadyExist.cust_startdate),
+          cust_enddate: extractGetTime(findAlreadyExist.cust_enddate),
+        }
+
+        return data
+      }
+
       const response = await executeHttpRequest(
         {
           destinationName: 'SFSF',
@@ -896,7 +950,7 @@ module.exports = async (srv) => {
   srv.on('CREATE', 'cust_listadiaria', async (req) => {
     const payload = req.data
 
-    const { cust_startdate, cust_enddate /* cust_listaNav */ } = payload
+    const { cust_startdate, cust_enddate, externalCode } = payload
 
     if (cust_startdate) {
       req.data.cust_startdate = formatDate(cust_startdate)
@@ -906,17 +960,32 @@ module.exports = async (srv) => {
       req.data.cust_enddate = formatDate(cust_enddate)
     }
 
-    // if (cust_listaNav) {
-    //   req.data.cust_listaNav = cust_listaNav.map(({ externalCode }) => {
-    //     return {
-    //       __metadata: {
-    //         uri: `/cust_ListadePresenca('${externalCode}')`,
-    //       },
-    //     }
-    //   })
-    // }
-
     try {
+      const findAlreadyExist = await successFactor.run(
+        SELECT.one.from('cust_listadiaria').where({
+          externalCode,
+        })
+      )
+
+      if (findAlreadyExist) {
+        delete findAlreadyExist.cust_presencaNav
+        delete findAlreadyExist.cust_listaNav
+        delete findAlreadyExist.cust_turmanav
+
+        delete findAlreadyExist.createdByNav
+        delete findAlreadyExist.wfRequestNav
+        delete findAlreadyExist.lastModifiedByNav
+        delete findAlreadyExist.mdfSystemRecordStatusNav
+
+        const data = {
+          ...findAlreadyExist,
+          cust_startdate: extractGetTime(findAlreadyExist.cust_startdate),
+          cust_enddate: extractGetTime(findAlreadyExist.cust_enddate),
+        }
+
+        return data
+      }
+
       const response = await executeHttpRequest(
         {
           destinationName: 'SFSF',
@@ -1060,6 +1129,31 @@ module.exports = async (srv) => {
     }
 
     try {
+      const findAlreadyExist = await successFactor.run(
+        SELECT.one.from('cust_presencalms').where({
+          externalCode,
+        })
+      )
+
+      if (findAlreadyExist) {
+        delete findAlreadyExist.cust_FichaNav
+        delete findAlreadyExist.cust_SegmentoNav
+        delete findAlreadyExist.cust_TurmaNav
+
+        delete findAlreadyExist.createdByNav
+        delete findAlreadyExist.wfRequestNav
+        delete findAlreadyExist.lastModifiedByNav
+        delete findAlreadyExist.mdfSystemRecordStatusNav
+
+        const data = {
+          ...findAlreadyExist,
+          cust_startdate: extractGetTime(findAlreadyExist.cust_startdate),
+          cust_enddate: extractGetTime(findAlreadyExist.cust_enddate),
+        }
+
+        return data
+      }
+
       const response = await executeHttpRequest(
         {
           destinationName: 'SFSF',
