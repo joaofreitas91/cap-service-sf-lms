@@ -499,7 +499,9 @@ module.exports = async (srv) => {
             const isTraining = cust_CPNT_TYP_ID.toLowerCase() === 'treinamento'
 
             if (cust_resultado === 'reprovado') {
-              statusResult = isTraining ? 'Treinamento_nao_aprovado' : 'portal_nao_aprovado'
+              statusResult = isTraining
+                ? 'Treinamento_nao_aprovado'
+                : 'portal_nao_aprovado'
             } else {
               //approved case
               statusResult = isTraining
