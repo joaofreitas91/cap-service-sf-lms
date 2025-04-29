@@ -419,7 +419,7 @@ module.exports = async (srv) => {
               },
               externalCode: externalCode,
               cust_resultado:
-                cust_CPNT_TYP_ID === 'treinamento'
+                cust_CPNT_TYP_ID.toLowerCase() === 'treinamento'
                   ? 'Treinamento_ausente'
                   : 'portal_ausente',
             },
@@ -496,10 +496,10 @@ module.exports = async (srv) => {
         const registrationFormsRequests = selectRegistrationForms.map(
           ({ externalCode, cust_resultado }) => {
             let statusResult = ''
-            const isTraining = cust_CPNT_TYP_ID === 'treinamento'
+            const isTraining = cust_CPNT_TYP_ID.toLowerCase() === 'treinamento'
 
             if (cust_resultado === 'reprovado') {
-              statusResult = isTraining ? 'Reprovado' : 'portal_nao_aprovado'
+              statusResult = isTraining ? 'Treinamento_nao_aprovado' : 'portal_nao_aprovado'
             } else {
               //approved case
               statusResult = isTraining
